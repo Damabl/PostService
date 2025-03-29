@@ -1,0 +1,59 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: post-service
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: postgresPost
+    password: saturdaySpring
+    url: jdbc:postgresql://localhost:5434/postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    properties:
+      spring.json.add.type.headers: false
+minio:
+  bucket: postimage
+  url: http://localhost:9000
+  access-key: user
+  secret-key: Damir2005
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+topic:
+  like-post: "like-events"
+  comment-post: "comment-events"
+  created-post: "post-events"
+logging:
+  level:
+    root: debug
+resilience4j:
+  circuitbreaker:
+    instances:
+      categoryService:
+        failureRateThreshold: 50 # % ошибок до срабатывания Circuit Breaker
+        waitDurationInOpenState: 10s # Сколько держать Circuit Breaker открытым
+        permittedNumberOfCallsInHalfOpenState: 2 # Количество проверочных запросов
+        slidingWindowSize: 5 # Окно для анализа ошибок
+image:
+  url: "http://localhost:8081/images/"
