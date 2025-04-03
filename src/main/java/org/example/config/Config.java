@@ -2,7 +2,7 @@ package org.example.config;
 
 import io.minio.MinioClient;
 import lombok.RequiredArgsConstructor;
-import org.example.service.props.MinioProperties;
+import org.example.properties.MinioProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

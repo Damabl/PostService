@@ -16,7 +16,9 @@ public class PostDto {
 
     @NotNull(message = "ID пользователя не может быть пустым")
     private Long userId;
-
+    @NotNull
+    @Size(max=500,message = "Заголовок слишком длинний")
+    private String title;
     @NotBlank(message = "Содержание поста не может быть пустым")
     private String content;
 

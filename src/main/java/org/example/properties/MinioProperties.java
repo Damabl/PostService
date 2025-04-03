@@ -1,4 +1,4 @@
-package org.example.service.props;
+package org.example.properties;
 
 import lombok.Getter;
 import lombok.Setter;

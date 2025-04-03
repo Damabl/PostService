@@ -1,21 +1,25 @@
 server:
-  port: 8081
+  port: 8082
 
 spring:
   application:
     name: post-service
-
   datasource:
-    driver-class-name: org.postgresql.Driver
-    username: postgresPost
-    password: saturdaySpring
-    url: jdbc:postgresql://localhost:5434/postgres
-
+    master:
+      jdbc-url: jdbc:postgresql://localhost:5432/postgres
+      username: user
+      password: password
+      driver-class-name: org.postgresql.Driver
+    slave:
+      jdbc-url: jdbc:postgresql://localhost:5433/postgres
+      username: user
+      password: password
+      driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-
+    show-sql: true
   servlet:
     multipart:
       max-file-size: 10MB
@@ -33,7 +37,6 @@ minio:
   url: http://localhost:9000
   access-key: user
   secret-key: Damir2005
-
 eureka:
   client:
     service-url:
@@ -44,16 +47,13 @@ topic:
   like-post: "like-events"
   comment-post: "comment-events"
   created-post: "post-events"
-logging:
-  level:
-    root: debug
 resilience4j:
   circuitbreaker:
     instances:
       categoryService:
-        failureRateThreshold: 50 # % ошибок до срабатывания Circuit Breaker
-        waitDurationInOpenState: 10s # Сколько держать Circuit Breaker открытым
-        permittedNumberOfCallsInHalfOpenState: 2 # Количество проверочных запросов
-        slidingWindowSize: 5 # Окно для анализа ошибок
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 2
+        slidingWindowSize: 5
 image:
   url: "http://localhost:8081/images/"

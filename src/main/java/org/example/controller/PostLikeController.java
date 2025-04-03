@@ -6,12 +6,12 @@ import org.example.service.PostLikeService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 @RestController
-@RequestMapping("/resq/likes")
+@RequestMapping("/likes")
 @RequiredArgsConstructor
 public class PostLikeController {
     private final PostLikeService likeService;
 
-    @PostMapping("")
+    @PostMapping()
     public ResponseEntity<String> likePost(@RequestBody PostLikeDto postLikeDto) {
         likeService.likePost(postLikeDto.getPostId(), postLikeDto.getUserId());
         return ResponseEntity.ok("Post liked");

@@ -2,6 +2,7 @@ package org.example.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.apache.kafka.common.protocol.types.Field;
 
 import java.util.List;
 
@@ -19,7 +20,8 @@ public class Post {
 
     @Column(name = "user_id", nullable = false)
     private Long userId;
-
+    @Column(name = "title")
+    private String title;
     @Column(name = "content")
     private String content;
 
@@ -38,7 +40,7 @@ public class Post {
     private List<PostComment> postCommentList;
 
     @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "user_categories", joinColumns = @JoinColumn(name = "user_id"))
+    @CollectionTable(name = "post_categories", joinColumns = @JoinColumn(name = "post_id"))
     @Column(name = "category_id")
     private List<String> categories;
 }

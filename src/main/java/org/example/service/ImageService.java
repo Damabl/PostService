@@ -7,7 +7,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.example.model.entity.Image;
 import org.example.repository.ImageRepository;
-import org.example.service.props.MinioProperties;
+import org.example.properties.MinioProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -54,6 +54,26 @@ public class ImageService {
         return imageIds;
     }
 
+    @SneakyThrows
+    public Long uploadSingle(MultipartFile file) {
+        if (file.isEmpty() || file.getOriginalFilename() == null) {
+            throw new InvalidParameterException("File is empty or has no name");
+        }
+
+        createBucket();
+        String fileName = generateFilename(file);
+        try (InputStream inputStream = file.getInputStream()) {
+            saveImage(inputStream, fileName);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read file input stream", e);
+        }
+
+        Image image = new Image();
+        image.setName(fileName);
+        image.setType(file.getContentType());
+        imageRepository.save(image);
+        return image.getId();
+    }
 
     public byte[] getImage(String fileName) throws IOException {
         try {
@@ -71,10 +91,8 @@ public class ImageService {
             }
             return outputStream.toByteArray();
         } catch (ErrorResponseException e) {
-            // Handle error when file not found
             throw new IOException("Image not found: " + fileName, e);
         } catch (Exception e) {
-            // Handle other MinIO errors
             throw new IOException("Failed to get image from MinIO: " + fileName, e);
         }
     }
@@ -91,6 +109,7 @@ public class ImageService {
             throw new RuntimeException("Failed to delete image from MinIO", e);
         }
     }
+
     @SneakyThrows
     private void createBucket() {
         boolean found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(minioProperties.getBucket()).build());
@@ -117,6 +136,7 @@ public class ImageService {
                         .stream(inputStream, inputStream.available(), -1)
                         .build());
     }
+
     public Image getImageById(Long postImageId) {
         return imageRepository.findById(postImageId).get();
     }
