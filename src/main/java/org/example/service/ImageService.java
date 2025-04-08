@@ -8,6 +8,8 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.example.model.entity.Image;
 import org.example.repository.ImageRepository;
 import org.example.properties.MinioProperties;
+import org.example.utils.DatabaseContextHolder;
+import org.example.utils.DatabaseType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -43,12 +45,16 @@ public class ImageService {
             } catch (IOException e) {
                 throw new RuntimeException("Failed to read file input stream", e);
             }
-
-            Image image = new Image();
-            image.setName(fileName);
-            image.setType(file.getContentType());
-            imageRepository.save(image);
-            imageIds.add(image.getId());
+            DatabaseContextHolder.setDatabaseType(DatabaseType.MASTER);
+            try {
+                Image image = new Image();
+                image.setName(fileName);
+                image.setType(file.getContentType());
+                imageRepository.save(image);
+                imageIds.add(image.getId());
+            }finally {
+                DatabaseContextHolder.clear();
+            }
         }
 
         return imageIds;
@@ -67,12 +73,17 @@ public class ImageService {
         } catch (IOException e) {
             throw new RuntimeException("Failed to read file input stream", e);
         }
+        DatabaseContextHolder.setDatabaseType(DatabaseType.MASTER);
+        try {
+            Image image = new Image();
+            image.setName(fileName);
+            image.setType(file.getContentType());
+            imageRepository.save(image);
+            return image.getId();
+        }finally {
+            DatabaseContextHolder.clear();
+        }
 
-        Image image = new Image();
-        image.setName(fileName);
-        image.setType(file.getContentType());
-        imageRepository.save(image);
-        return image.getId();
     }
 
     public byte[] getImage(String fileName) throws IOException {
@@ -113,7 +124,6 @@ public class ImageService {
     @SneakyThrows
     private void createBucket() {
         boolean found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(minioProperties.getBucket()).build());
-
         if (!found) {
             minioClient.makeBucket(MakeBucketArgs.builder().bucket(minioProperties.getBucket()).build());
         }
@@ -138,6 +148,11 @@ public class ImageService {
     }
 
     public Image getImageById(Long postImageId) {
-        return imageRepository.findById(postImageId).get();
+        DatabaseContextHolder.setDatabaseType(DatabaseType.SLAVE);
+        try {
+            return imageRepository.findById(postImageId).get();
+        }finally {
+            DatabaseContextHolder.clear();
+        }
     }
 }

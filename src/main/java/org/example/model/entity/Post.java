@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.apache.kafka.common.protocol.types.Field;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Table(name = "post")
@@ -12,7 +13,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Post {
+public class Post implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

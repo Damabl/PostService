@@ -25,6 +25,7 @@ import java.util.List;
 public class PostService {
     private final PostRepository postRepository;
     private final ImageService imageService;
+    private final PostRedisService postRedisService;
     private final KafkaTemplate<String, PostCreatedEvent> kafkaTemplate;
     private final TopicProperties topicProperties;
     private final UserServiceClient userServiceClient;
@@ -53,14 +54,22 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public List<Post> searchPosts(String keyword) {
+        String redisKey = "search:" + keyword.toLowerCase();
+        List<Post> cachedPosts = postRedisService.getCachedSearchResults(redisKey);
+        if (cachedPosts != null && !cachedPosts.isEmpty()) {
+            return cachedPosts;
+        }
         DatabaseContextHolder.setDatabaseType(DatabaseType.SLAVE);
         try {
             Pageable pageable = PageRequest.of(0, 20);
-            return postRepository.findByContentContaining(keyword, pageable).getContent();
+            List<Post> posts = postRepository.findByContentContaining(keyword, pageable).getContent();
+            postRedisService.cacheSearchResults(redisKey, posts);
+            return posts;
         } finally {
             DatabaseContextHolder.clear();
         }
     }
+
 
     @Transactional
     public void updateUserCategories(Long postId, List<String> categoryIds) {
@@ -94,7 +103,15 @@ public class PostService {
         }
         return content;
     }
-
+    public String cacheTop100Posts(List<Long> postIds) {
+        List<Post> posts = postRepository.findAllById(postIds);
+        postRedisService.clearTopPosts();
+        int score = 100;
+        for (Post post : posts) {
+            postRedisService.savePost(post, score--);
+        }
+        return "Топ-100 постов обновлены в Redis.";
+    }
     @Transactional
     public String deletePost(Long id) throws IOException {
         DatabaseContextHolder.setDatabaseType(DatabaseType.MASTER);

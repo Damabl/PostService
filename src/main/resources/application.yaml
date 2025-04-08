@@ -1,19 +1,19 @@
 server:
-  port: 8082
+  port: ${SERVER_PORT}
 
 spring:
   application:
     name: post-service
   datasource:
     master:
-      jdbc-url: jdbc:postgresql://localhost:5432/postgres
-      username: user
-      password: password
+      jdbc-url: ${DB_MASTER_URL}
+      username: ${DB_MASTER_USER}
+      password: ${DB_MASTER_PASSWORD}
       driver-class-name: org.postgresql.Driver
     slave:
-      jdbc-url: jdbc:postgresql://localhost:5433/postgres
-      username: user
-      password: password
+      jdbc-url: ${DB_SLAVE_URL}
+      username: ${DB_SLAVE_USER}
+      password: ${DB_SLAVE_PASSWORD}
       driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -26,34 +26,45 @@ spring:
       max-request-size: 10MB
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     properties:
       spring.json.add.type.headers: false
+
 minio:
-  bucket: postimage
-  url: http://localhost:9000
-  access-key: user
-  secret-key: Damir2005
+  bucket: ${MINIO_BUCKET}
+  url: ${MINIO_URL}
+  access-key: ${MINIO_ACCESS_KEY}
+  secret-key: ${MINIO_SECRET_KEY}
+
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_SERVER}
   instance:
     prefer-ip-address: true
+
+  redis:
+    host: localhost
+    port: 6379
 topic:
-  like-post: "like-events"
-  comment-post: "comment-events"
-  created-post: "post-events"
+  like-post: ${KAFKA_LIKE_TOPIC}
+  comment-post: ${KAFKA_COMMENT_TOPIC}
+  created-post: ${KAFKA_POST_TOPIC}
+
 resilience4j:
   circuitbreaker:
     instances:
       categoryService:
-        failureRateThreshold: 50
-        waitDurationInOpenState: 10s
-        permittedNumberOfCallsInHalfOpenState: 2
-        slidingWindowSize: 5
+        failureRateThreshold: ${CATEGORY_SERVICE_FAILURE_RATE}
+        waitDurationInOpenState: ${CATEGORY_SERVICE_WAIT_DURATION}
+        permittedNumberOfCallsInHalfOpenState: ${CATEGORY_SERVICE_HALF_OPEN_CALLS}
+        slidingWindowSize: ${CATEGORY_SERVICE_SLIDING_WINDOW}
+
 image:
-  url: "http://localhost:8081/images/"
+  url: ${IMAGE_URL}
+
+USER_SERVICE_URL:
+  http://user-service"

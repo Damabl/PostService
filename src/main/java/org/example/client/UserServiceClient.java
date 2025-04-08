@@ -2,7 +2,7 @@ package org.example.client;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
-import org.example.dto.CategoryDto;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import java.util.List;
@@ -11,7 +11,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserServiceClient {
     private final WebClient.Builder webClientBuilder;
-    private final String USER_SERVICE_URL = "http://user-service";
+    @Value("${USER_SERVICE_URL}")
+    private String USER_SERVICE_URL;
 
     @CircuitBreaker(name = "userService", fallbackMethod = "getUserCategoriesFallback")
     public List<String> getUserCategories(Long userId) {

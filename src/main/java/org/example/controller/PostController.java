@@ -45,5 +45,10 @@ public class PostController {
         String result = postService.deletePost(id);
         return ResponseEntity.ok(result);
     }
+    @PostMapping("/top100")
+    public ResponseEntity<String> addTop100Posts(@RequestBody List<Long> postIds) {
+        String result = postService.cacheTop100Posts(postIds);
+        return ResponseEntity.ok(result);
+    }
 
 }
