@@ -8,6 +8,8 @@ import org.example.model.entity.PostComment;
 import org.example.properties.TopicProperties;
 import org.example.repository.PostCommentRepository;
 import org.example.repository.PostRepository;
+import org.example.utils.DatabaseContextHolder;
+import org.example.utils.DatabaseType;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -22,25 +24,40 @@ public class PostCommentService {
     private final TopicProperties topicProperties;
 
     public void addComment(Long postId, Long userId, String content, Long parentId) {
-        PostComment comment = new PostComment();
-        comment.setPost(postRepository.getById(postId));
-        comment.setUserId(userId);
-        comment.setContent(content);
+        DatabaseContextHolder.setDatabaseType(DatabaseType.MASTER);
+        try {
+            PostComment comment = new PostComment();
+            comment.setPost(postRepository.getById(postId));
+            comment.setUserId(userId);
+            comment.setContent(content);
 
-        if (parentId != null) {
-            comment.setParent(commentRepository.findById(parentId).orElseThrow());
+            if (parentId != null) {
+                comment.setParent(commentRepository.findById(parentId).orElseThrow());
+            }
+            commentRepository.save(comment);
+        }finally {
+            DatabaseContextHolder.clear();
         }
-
-        commentRepository.save(comment);
         CommentNotificationEvent event = new CommentNotificationEvent(postRepository.findById(postId).orElseThrow(()->new PostNotFoundException("Post not found by"+ postId+"id")).getUserId(), postId, userId);
         kafkaTemplate.send(topicProperties.getCommentPost(), event);
+
     }
 
     public List<PostComment> getComments(Long postId) {
-        return commentRepository.findByPostId(postId);
+        DatabaseContextHolder.setDatabaseType(DatabaseType.SLAVE);
+        try {
+            return commentRepository.findByPostId(postId);
+        }finally {
+            DatabaseContextHolder.clear();
+        }
     }
 
     public List<PostComment> getReplies(Long commentId) {
-        return commentRepository.findByParentId(commentId);
+        DatabaseContextHolder.setDatabaseType(DatabaseType.SLAVE);
+        try {
+            return commentRepository.findByParentId(commentId);
+        }finally {
+            DatabaseContextHolder.clear();
+        }
     }
 }

@@ -2,7 +2,10 @@ package org.example.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.apache.kafka.common.protocol.types.Field;
 
+import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Table(name = "post")
@@ -11,7 +14,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Post {
+public class Post implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -19,8 +22,9 @@ public class Post {
 
     @Column(name = "user_id", nullable = false)
     private Long userId;
-
-    @Column(name = "content")
+    @Column(name = "title", nullable = false)
+    private String title;
+    @Column(name = "content", nullable = false)
     private String content;
 
     @ManyToMany
@@ -38,7 +42,22 @@ public class Post {
     private List<PostComment> postCommentList;
 
     @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "user_categories", joinColumns = @JoinColumn(name = "user_id"))
+    @CollectionTable(name = "post_categories", joinColumns = @JoinColumn(name = "post_id"))
     @Column(name = "category_id")
     private List<String> categories;
+    private LocalDateTime createdAt;
+
+    public Post(Long id, Long userId, String title) {
+        this.id=id;
+        this.userId=userId;
+        this.title=title;
+    }
+    public Post(Long id, Long userId, String title, String content, LocalDateTime createdAt) {
+        this.id = id;
+        this.userId = userId;
+        this.title = title;
+        this.content = content;
+        this.createdAt = createdAt;
+    }
+
 }

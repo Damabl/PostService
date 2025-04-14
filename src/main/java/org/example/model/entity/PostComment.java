@@ -28,7 +28,7 @@ public class PostComment {
     private Post post;
 
     @Column(name = "user_id", nullable = false)
-    private Long userId; // ID пользователя из другого сервиса
+    private Long userId;
 
     @Column(name = "content", nullable = false)
     private String content;
@@ -39,7 +39,7 @@ public class PostComment {
 
     @ManyToOne
     @JoinColumn(name = "parent_id")
-    private PostComment parent; // Для ответов на комментарии
+    private PostComment parent;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostComment> replies = new ArrayList<>();

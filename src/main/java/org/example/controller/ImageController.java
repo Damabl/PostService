@@ -21,13 +21,13 @@ public class ImageController {
     private final ImageService imageService;
     private final ImageRepository imageRepository;
 
-
     @GetMapping("/{id}")
     public ResponseEntity<byte[]> getImage(@PathVariable Long id) throws IOException {
-        String filename=imageRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Image not found")).getName();
+        String filename = imageRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Image not found")).getName();
         byte[] imageBytes = imageService.getImage(filename);
         return ResponseEntity.ok().body(imageBytes);
     }
+
     @PostMapping("/upload")
     public ResponseEntity<?> uploadMultipleImages(@RequestParam("files") List<MultipartFile> files) {
         try {
@@ -38,11 +38,20 @@ public class ImageController {
         }
     }
 
+    @PostMapping("/upload/single")
+    public ResponseEntity<?> uploadSingleImage(@RequestParam("file") MultipartFile file) {
+        try {
+            Long imageId = imageService.uploadSingle(file);
+            return ResponseEntity.ok(imageId);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Failed to upload image");
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteImage(@PathVariable Long id) {
-        String filename=imageRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Image not found")).getName();
+        String filename = imageRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Image not found")).getName();
         try {
-
             imageService.deleteImage(filename);
             return ResponseEntity.ok("Image deleted");
         } catch (Exception e) {

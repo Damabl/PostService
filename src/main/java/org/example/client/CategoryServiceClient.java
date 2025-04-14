@@ -37,13 +37,11 @@ public class CategoryServiceClient {
                 .block();
     }
 
-    // Фолбэк для одиночной категории
     private CategoryDto getCategoryFallback(String categoryId, Throwable throwable) {
         System.err.println("Category service is down! Returning fallback category.");
         return new CategoryDto("default", "Fallback Category");
     }
 
-    // Фолбэк для списка категорий
     private List<CategoryDto> getAllCategoriesFallback(Throwable throwable) {
         System.err.println("Category service is down! Returning empty category list.");
         return List.of(new CategoryDto("default", "Fallback Category"));
