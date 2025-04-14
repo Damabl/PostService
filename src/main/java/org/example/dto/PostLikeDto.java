@@ -1,6 +1,7 @@
 package org.example.dto;
 
 import jakarta.validation.constraints.NotNull;
+import javassist.NotFoundException;
 import lombok.*;
 
 @Data
@@ -11,7 +12,6 @@ public class PostLikeDto {
 
     @NotNull(message = "ID пользователя не может быть пустым")
     private Long userId;
-
     @NotNull(message = "ID поста не может быть пустым")
     private Long postId;
 }

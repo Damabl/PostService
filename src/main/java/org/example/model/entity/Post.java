@@ -5,6 +5,7 @@ import lombok.*;
 import org.apache.kafka.common.protocol.types.Field;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Table(name = "post")
@@ -21,9 +22,9 @@ public class Post implements Serializable {
 
     @Column(name = "user_id", nullable = false)
     private Long userId;
-    @Column(name = "title")
+    @Column(name = "title", nullable = false)
     private String title;
-    @Column(name = "content")
+    @Column(name = "content", nullable = false)
     private String content;
 
     @ManyToMany
@@ -44,4 +45,19 @@ public class Post implements Serializable {
     @CollectionTable(name = "post_categories", joinColumns = @JoinColumn(name = "post_id"))
     @Column(name = "category_id")
     private List<String> categories;
+    private LocalDateTime createdAt;
+
+    public Post(Long id, Long userId, String title) {
+        this.id=id;
+        this.userId=userId;
+        this.title=title;
+    }
+    public Post(Long id, Long userId, String title, String content, LocalDateTime createdAt) {
+        this.id = id;
+        this.userId = userId;
+        this.title = title;
+        this.content = content;
+        this.createdAt = createdAt;
+    }
+
 }

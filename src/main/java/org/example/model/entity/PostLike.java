@@ -24,5 +24,9 @@ public class PostLike {
     @JsonIgnore
     @JoinColumn(name = "post_id", referencedColumnName = "id")
     private Post post;
+    public PostLike(Long userId, Post post) {
+        this.userId = userId;
+        this.post = post;
+    }
 }
 

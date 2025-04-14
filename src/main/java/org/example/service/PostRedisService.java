@@ -35,7 +35,6 @@ public class PostRedisService {
         redisTemplate.opsForValue().set(key, posts, 300, TimeUnit.SECONDS); // 5 минут
     }
 
-
     @SuppressWarnings("unchecked")
     public List<Post> getCachedSearchResults(String key) {
         return (List<Post>) redisTemplate.opsForValue().get(key);

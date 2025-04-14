@@ -1,5 +1,8 @@
 package org.example.service;
 
+import org.example.dto.PostPreviewDto;
+import org.example.dto.UserInfoDto;
+import org.example.dto.mapper.PostMapper;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.client.UserServiceClient;
@@ -18,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -29,6 +33,8 @@ public class PostService {
     private final KafkaTemplate<String, PostCreatedEvent> kafkaTemplate;
     private final TopicProperties topicProperties;
     private final UserServiceClient userServiceClient;
+    private final PostLikeService postLikeService;
+    private final PostMapper postMapper;
 
     @Value("${image.url}")
     private String urlImage;
@@ -82,20 +88,35 @@ public class PostService {
             DatabaseContextHolder.clear();
         }
     }
-
     @Transactional(readOnly = true)
-    public List<Post> getPostsByUserId(Long userId) {
+    public List<PostPreviewDto> getPostsByUserId(Long userId) {
         DatabaseContextHolder.setDatabaseType(DatabaseType.SLAVE);
         try {
             List<String> categoryIds = userServiceClient.getUserCategories(userId);
             if (categoryIds.isEmpty()) return List.of();
-            Pageable pageable = PageRequest.of(0, 20);
-            return postRepository.findByCategories(categoryIds, pageable).getContent();
+            Pageable pageable = PageRequest.of(0, 10);
+            List<Post> posts = postRepository.findByCategories(categoryIds, pageable).getContent();
+            List<PostPreviewDto> response = new ArrayList<>();
+            for (Post post : posts) {
+                UserInfoDto userInfo = userServiceClient.getUserInfo(post.getUserId());
+                long likeCount = postLikeService.getLikesCount(post.getId());
+                response.add(postMapper.toDto(
+                        post,
+                        userInfo.getUsername(),
+                        userInfo.getAvatarId(),
+                        likeCount
+                ));
+            }
+            return response;
         } finally {
             DatabaseContextHolder.clear();
         }
     }
 
+    public String getContentById(Long postId) {
+        String content=postRepository.findById(postId).get().getContent();
+        return content;
+    }
     public String replaceNameImages(String content, List<Image> images) {
         if (images == null || images.isEmpty()) return content;
         for (int i = 0; i < images.size(); i++) {

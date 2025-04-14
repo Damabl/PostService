@@ -1,6 +1,8 @@
 package org.example.service;
 
 import lombok.AllArgsConstructor;
+import org.example.exception.exceptions.PostNotFoundException;
+import org.example.model.entity.Post;
 import org.example.properties.TopicProperties;
 import org.example.utils.DatabaseContextHolder;
 import org.example.utils.DatabaseType;
@@ -18,24 +20,32 @@ public class PostLikeService {
     private final PostRepository postRepository;
     private final KafkaTemplate<String, LikeNotificationEvent> kafkaTemplate;
     private final TopicProperties topicProperties;
-    public void likePost(Long postId, Long userId) {
+    public boolean toggleLike(Long postId, Long userId) {
         DatabaseContextHolder.setDatabaseType(DatabaseType.MASTER);
         try {
-            if (!likeRepository.existsByPostIdAndUserId(postId, userId)) {
-                likeRepository.save(new PostLike(null, userId, postRepository.getById(postId)));
-                LikeNotificationEvent event = new LikeNotificationEvent(postRepository.findById(postId).get().getUserId(), postId, userId);
+            boolean alreadyLiked = likeRepository.existsByPostIdAndUserId(postId, userId);
+            if (alreadyLiked) {
+                likeRepository.deleteByPostIdAndUserId(postId, userId);
+                return false;
+            } else {
+                Post post = postRepository.findById(postId)
+                        .orElseThrow(() -> new PostNotFoundException("Post not found"));
+                likeRepository.save(new PostLike(userId, post));
+
+                LikeNotificationEvent event = new LikeNotificationEvent(post.getUserId(), postId, userId);
                 kafkaTemplate.send(topicProperties.getLikePost(), event);
+                return true;
             }
-        }finally {
+        } finally {
             DatabaseContextHolder.clear();
         }
     }
 
-    public void unlikePost(Long postId, Long userId) {
-        DatabaseContextHolder.setDatabaseType(DatabaseType.MASTER);
+    public boolean isPostLikedByUser(Long postId, Long userId) {
+        DatabaseContextHolder.setDatabaseType(DatabaseType.SLAVE);
         try {
-            likeRepository.deleteByPostIdAndUserId(postId, userId);
-        }finally {
+            return likeRepository.existsByPostIdAndUserId(postId, userId);
+        } finally {
             DatabaseContextHolder.clear();
         }
     }

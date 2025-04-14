@@ -4,6 +4,7 @@ package org.example.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.common.protocol.types.Field;
 import org.example.dto.PostDto;
 import org.example.model.entity.Post;
 import org.example.payload.ResponseMessage;
@@ -16,7 +17,6 @@ import java.util.List;
 @Slf4j
 @Controller
 @CrossOrigin("*")
-@RequestMapping("/resq")
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
@@ -38,6 +38,11 @@ public class PostController {
             @RequestBody List<String> categoryIds) {
         postService.updateUserCategories(postId, categoryIds);
         return ResponseEntity.ok("Categories updated successfully");
+    }
+    @GetMapping("/posts/{id}/content")
+    public ResponseEntity<String> getPostContent(@PathVariable Long id) {
+        String content=postService.getContentById(id);
+        return ResponseEntity.ok(content);
     }
     @DeleteMapping("/post/{id}")
     @SneakyThrows
