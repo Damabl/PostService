@@ -30,12 +30,8 @@ public class ImageController {
 
     @PostMapping("/upload")
     public ResponseEntity<?> uploadMultipleImages(@RequestParam("files") List<MultipartFile> files) {
-        try {
             List<Long> imageIds = imageService.uploadMultiple(files);
             return ResponseEntity.ok(imageIds);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Failed to upload images");
-        }
     }
 
     @PostMapping("/upload/single")

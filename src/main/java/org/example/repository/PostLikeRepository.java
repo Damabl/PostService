@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PostLikeRepository extends JpaRepository<PostLike,Long> {
-    long countByPostId(Long postId); // Подсчет лайков
+    long countByPostId(Long postId);
     boolean existsByPostIdAndUserId(Long postId, Long userId); // Проверка, лайкал ли уже
     void deleteByPostIdAndUserId(Long postId, Long userId);
 }

@@ -45,6 +45,7 @@ public class Post implements Serializable {
     @CollectionTable(name = "post_categories", joinColumns = @JoinColumn(name = "post_id"))
     @Column(name = "category_id")
     private List<String> categories;
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     public Post(Long id, Long userId, String title) {
@@ -59,5 +60,6 @@ public class Post implements Serializable {
         this.content = content;
         this.createdAt = createdAt;
     }
+
 
 }

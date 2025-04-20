@@ -1,6 +1,7 @@
 package org.example.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.dto.CommentPreviewDto;
 import org.example.model.entity.PostComment;
 import org.example.service.PostCommentService;
 import org.springframework.http.ResponseEntity;
@@ -22,11 +23,16 @@ public class PostCommentController {
         return ResponseEntity.ok().build();
     }
     @GetMapping("/{postId}")
-    public ResponseEntity<List<PostComment>> getComments(@PathVariable Long postId) {
-        return ResponseEntity.ok(commentService.getComments(postId));
+    public ResponseEntity<List<CommentPreviewDto>> getComments(
+            @PathVariable Long postId,
+            @RequestParam(defaultValue = "0") int page
+    ) {
+        return ResponseEntity.ok(commentService.getComments(postId, page));
     }
+
     @GetMapping("/replies/{commentId}")
-    public ResponseEntity<List<PostComment>> getReplies(@PathVariable Long commentId) {
-        return ResponseEntity.ok(commentService.getReplies(commentId));
+    public ResponseEntity<List<CommentPreviewDto>> getReplies(@PathVariable Long commentId,
+                                                        @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(commentService.getReplies(commentId,page));
     }
 }

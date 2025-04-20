@@ -16,10 +16,11 @@ public interface PostMapper {
     @Mapping(source = "username", target = "username")
     @Mapping(source = "avatarId", target = "avatarId")
     @Mapping(source = "likeCount", target = "likeCount")
-    PostPreviewDto toDto(Post post, String username, Long avatarId, long likeCount);
+    PostPreviewDto toDto(Post post, String username, Long avatarId, long likeCount,long commentCount);
     @Named("shortContent")
     static String shortContent(String content) {
         if (content == null) return "";
         return content.length() > 100 ? content.substring(0, 100) + "..." : content;
     }
+
 }

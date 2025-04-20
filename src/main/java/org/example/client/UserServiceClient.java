@@ -38,7 +38,7 @@ public class UserServiceClient {
         System.err.println("User service is down! Returning default user info.");
         UserInfoDto fallbackUser = new UserInfoDto();
         fallbackUser.setUsername("Unknown");
-        fallbackUser.setAvatarData(null);
+        fallbackUser.setAvatarId(null);
         return fallbackUser;
     }
     private List<String> getUserCategoriesFallback(Long userId, Throwable throwable) {

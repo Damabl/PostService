@@ -64,7 +64,7 @@ resilience4j:
         slidingWindowSize: ${CATEGORY_SERVICE_SLIDING_WINDOW}
 
 image:
-  url: ${IMAGE_URL}
+ url: ${IMAGE_URL}
 
 USER_SERVICE_URL:
-  http://user-service"
+  "http://user-service"
