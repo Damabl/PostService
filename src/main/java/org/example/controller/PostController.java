@@ -4,7 +4,6 @@ package org.example.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.common.protocol.types.Field;
 import org.example.dto.PostDto;
 import org.example.dto.PostPreviewDto;
 import org.example.model.entity.Post;
@@ -33,8 +32,8 @@ public class PostController {
     @SneakyThrows
     @PostMapping("/post")
     public ResponseEntity<ResponseMessage> addPost(@ModelAttribute PostDto postDto) {
-        postService.addPost(postDto);
-        return ResponseEntity.ok(new ResponseMessage("Post added successfully"));
+        String response=postService.addPost(postDto);
+        return ResponseEntity.ok(new ResponseMessage(response));
     }
     @PostMapping("/post/{keyword}/search")
     public ResponseEntity<List<Post>> searchPosts(@PathVariable String keyword) {

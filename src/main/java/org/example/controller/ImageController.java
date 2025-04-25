@@ -1,10 +1,8 @@
 package org.example.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.model.entity.Image;
 import org.example.repository.ImageRepository;
 import org.example.service.ImageService;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;

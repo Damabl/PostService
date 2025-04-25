@@ -1,6 +1,7 @@
 package org.example.repository;
 
 import org.example.model.entity.Post;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,7 +15,7 @@ import java.util.Optional;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findAll();
-    Optional<Post> findById(Long id);
+    Optional<Post> findById(@NotNull Long id);
     @Query("SELECT p.id,p.userId,p.title,p.content,p.createdAt FROM Post p JOIN p.categories c WHERE c IN :categories")
     Page<Post> findByCategories(@Param("categories") List<String> categoryIds, Pageable pageable);
     @Query("SELECT p.id,p.userId,p.title,p.content,p.createdAt FROM Post p JOIN p.categories c WHERE c IN :categories")

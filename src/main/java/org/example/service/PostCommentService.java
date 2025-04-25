@@ -1,10 +1,8 @@
 package org.example.service;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.kafka.common.protocol.types.Field;
 import org.example.client.UserServiceClient;
 import org.example.dto.CommentPreviewDto;
-import org.example.dto.PostPreviewDto;
 import org.example.dto.UserInfoDto;
 import org.example.events.CommentNotificationEvent;
 import org.example.exception.exceptions.PostNotFoundException;
@@ -35,7 +33,7 @@ public class PostCommentService {
         DatabaseContextHolder.setDatabaseType(DatabaseType.MASTER);
         try {
             PostComment comment = new PostComment();
-            comment.setPost(postRepository.getById(postId));
+            comment.setPost(postRepository.findById(postId).orElseThrow(()->new PostNotFoundException("Post not found")));
             comment.setUserId(userId);
             comment.setContent(content);
 

@@ -1,6 +1,5 @@
 package org.example.service;
 
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.example.dto.PostPreviewDto;
 import org.example.dto.UserInfoDto;
@@ -23,7 +22,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -127,8 +125,8 @@ public class PostService {
 
 
     public String getContentById(Long postId) {
-        String content=postRepository.findById(postId).get().getContent();
-        return content;
+        return postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found with id: " + postId))
+                .getContent();
     }
     public String replaceNameImages(String content, List<Image> images) {
         if (images == null || images.isEmpty()) return content;
@@ -147,7 +145,7 @@ public class PostService {
         return "Топ-100 постов обновлены в Redis.";
     }
     @Transactional
-    public String deletePost(Long id) throws IOException {
+    public String deletePost(Long id) {
         DatabaseContextHolder.setDatabaseType(DatabaseType.MASTER);
         try {
             Post post = postRepository.findById(id).orElseThrow(() -> new PostNotFoundException("Post not found"));

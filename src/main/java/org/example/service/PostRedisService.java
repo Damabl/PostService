@@ -5,16 +5,13 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Service
 public class PostRedisService {
 
     private static final String KEY = "popular_posts";
-    private static final long SEARCH_CACHE_TTL = 300;
     private final RedisTemplate<String, Object> redisTemplate;
     private final ZSetOperations<String, Object> zSetOps;
 

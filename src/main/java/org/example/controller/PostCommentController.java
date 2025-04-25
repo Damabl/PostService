@@ -2,7 +2,6 @@ package org.example.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.dto.CommentPreviewDto;
-import org.example.model.entity.PostComment;
 import org.example.service.PostCommentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
