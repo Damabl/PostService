@@ -4,8 +4,8 @@ package org.example.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.common.protocol.types.Field;
 import org.example.dto.PostDto;
+import org.example.dto.PostPreviewDto;
 import org.example.model.entity.Post;
 import org.example.payload.ResponseMessage;
 import org.example.service.PostService;
@@ -20,12 +20,20 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
-
+    @GetMapping("/by-user/{userId}")
+    public ResponseEntity<List<PostPreviewDto>> getPostsByUser(
+            @PathVariable Long userId,
+            @RequestParam(required = false) Long afterPostId,
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        List<PostPreviewDto> posts = postService.getPostsByUserId(userId, afterPostId, limit);
+        return ResponseEntity.ok(posts);
+    }
     @SneakyThrows
     @PostMapping("/post")
     public ResponseEntity<ResponseMessage> addPost(@ModelAttribute PostDto postDto) {
-        postService.addPost(postDto);
-        return ResponseEntity.ok(new ResponseMessage("Post added successfully"));
+        String response=postService.addPost(postDto);
+        return ResponseEntity.ok(new ResponseMessage(response));
     }
     @PostMapping("/post/{keyword}/search")
     public ResponseEntity<List<Post>> searchPosts(@PathVariable String keyword) {

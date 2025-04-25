@@ -20,6 +20,7 @@ import java.security.InvalidParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -94,13 +95,14 @@ public class ImageService {
                             .object(fileName)
                             .build());
 
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, bytesRead);
+            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+                return outputStream.toByteArray();
             }
-            return outputStream.toByteArray();
         } catch (ErrorResponseException e) {
             throw new IOException("Image not found: " + fileName, e);
         } catch (Exception e) {
@@ -108,14 +110,14 @@ public class ImageService {
         }
     }
 
-    public void deleteImage(String fileName) throws IOException {
+    public void deleteImage(String fileName){
         try {
             minioClient.removeObject(
                     RemoveObjectArgs.builder()
                             .bucket(minioProperties.getBucket())
                             .object(fileName)
                             .build());
-            imageRepository.delete(imageRepository.findByName(fileName).get());
+            imageRepository.delete(imageRepository.findByName(fileName).orElseThrow(()->new InvalidParameterException("Image not found")));
         } catch (Exception e) {
             throw new RuntimeException("Failed to delete image from MinIO", e);
         }
@@ -135,7 +137,7 @@ public class ImageService {
     }
 
     private String getExtension(MultipartFile file) {
-        return file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
+        return Objects.requireNonNull(file.getOriginalFilename()).substring(file.getOriginalFilename().lastIndexOf(".") + 1);
     }
 
     private void saveImage(InputStream inputStream, String fileName) throws IOException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
@@ -150,7 +152,7 @@ public class ImageService {
     public Image getImageById(Long postImageId) {
         DatabaseContextHolder.setDatabaseType(DatabaseType.SLAVE);
         try {
-            return imageRepository.findById(postImageId).get();
+            return imageRepository.findById(postImageId).orElseThrow(()->new InvalidParameterException("Image not found"));
         }finally {
             DatabaseContextHolder.clear();
         }

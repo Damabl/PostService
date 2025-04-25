@@ -13,9 +13,10 @@ public class PostPreviewDto {
     private String username;
     private Long avatarId;
     private Long likeCount;
+    private Long commentCount;
     private LocalDateTime createdAt;
 
-    public PostPreviewDto(Long postId, Long userId, String title, String content, String username, Long avatarId, Long likeCount) {
+    public PostPreviewDto(Long postId, Long userId, String title, String content, String username, Long avatarId, Long likeCount, Long commentCount, LocalDateTime createdAt) {
         this.postId = postId;
         this.userId = userId;
         this.title = title;
@@ -23,6 +24,8 @@ public class PostPreviewDto {
         this.username = username;
         this.avatarId = avatarId;
         this.likeCount = likeCount;
+        this.commentCount = commentCount;
+        this.createdAt = createdAt;
     }
 
 }

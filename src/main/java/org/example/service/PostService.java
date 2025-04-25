@@ -1,8 +1,10 @@
 package org.example.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.example.dto.PostPreviewDto;
 import org.example.dto.UserInfoDto;
 import org.example.dto.mapper.PostMapper;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.client.UserServiceClient;
@@ -20,13 +22,16 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostService {
+    private final PostCommentService postCommentService;
+    @Value("${image.url}")
+    private String urlImage;
     private final PostRepository postRepository;
     private final ImageService imageService;
     private final PostRedisService postRedisService;
@@ -36,11 +41,9 @@ public class PostService {
     private final PostLikeService postLikeService;
     private final PostMapper postMapper;
 
-    @Value("${image.url}")
-    private String urlImage;
-
     @Transactional
     public String addPost(PostDto postDto) {
+
         DatabaseContextHolder.setDatabaseType(DatabaseType.MASTER);
         try {
             Post post = new Post();
@@ -89,22 +92,29 @@ public class PostService {
         }
     }
     @Transactional(readOnly = true)
-    public List<PostPreviewDto> getPostsByUserId(Long userId) {
+    public List<PostPreviewDto> getPostsByUserId(Long userId, Long afterPostId, int limit) {
         DatabaseContextHolder.setDatabaseType(DatabaseType.SLAVE);
         try {
             List<String> categoryIds = userServiceClient.getUserCategories(userId);
             if (categoryIds.isEmpty()) return List.of();
-            Pageable pageable = PageRequest.of(0, 10);
-            List<Post> posts = postRepository.findByCategories(categoryIds, pageable).getContent();
+            Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "id"));
+            List<Post> posts;
+            if (afterPostId == null) {
+                posts = postRepository.findByCategories(categoryIds, pageable).getContent();
+            } else {
+                posts = postRepository.findByCategoriesAndIdLessThan(categoryIds, afterPostId, pageable).getContent();
+            }
             List<PostPreviewDto> response = new ArrayList<>();
             for (Post post : posts) {
                 UserInfoDto userInfo = userServiceClient.getUserInfo(post.getUserId());
                 long likeCount = postLikeService.getLikesCount(post.getId());
+                long commentCount = postCommentService.getCommentsCount(post.getId());
                 response.add(postMapper.toDto(
                         post,
                         userInfo.getUsername(),
                         userInfo.getAvatarId(),
-                        likeCount
+                        likeCount,
+                        commentCount
                 ));
             }
             return response;
@@ -113,9 +123,10 @@ public class PostService {
         }
     }
 
+
     public String getContentById(Long postId) {
-        String content=postRepository.findById(postId).get().getContent();
-        return content;
+        return postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found with id: " + postId))
+                .getContent();
     }
     public String replaceNameImages(String content, List<Image> images) {
         if (images == null || images.isEmpty()) return content;
@@ -134,7 +145,7 @@ public class PostService {
         return "Топ-100 постов обновлены в Redis.";
     }
     @Transactional
-    public String deletePost(Long id) throws IOException {
+    public String deletePost(Long id) {
         DatabaseContextHolder.setDatabaseType(DatabaseType.MASTER);
         try {
             Post post = postRepository.findById(id).orElseThrow(() -> new PostNotFoundException("Post not found"));
